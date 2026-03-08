@@ -25,6 +25,50 @@ const getPendingUrl = () => new Promise(r => chrome.storage.local.get('pendingUr
 }));
 const getCurrentTabUrl = () => new Promise(r => chrome.tabs.query({ active: true, currentWindow: true }, t => r(t[0]?.url || '')));
 
+
+async function renderReport(reportUrl) {
+  const token = await getToken();
+  logoutBtn.style.display = 'block';
+  app.innerHTML = `
+    <div style="margin-bottom:12px">
+      <button id="backBtn" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:Outfit,sans-serif;font-size:12px;padding:0">← Back</button>
+    </div>
+    <div class="login-title" style="font-size:15px;margin-bottom:4px">Report an issue</div>
+    <div class="login-sub" style="margin-bottom:12px">${reportUrl.length > 50 ? reportUrl.slice(0,50)+'…' : reportUrl}</div>
+    <div class="field">
+      <label>Issue type</label>
+      <select id="reasonSel" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:Outfit,sans-serif;font-size:13px;padding:8px 10px;outline:none">
+        <option value="wrong_price">Wrong price</option>
+        <option value="broken_link">Broken / unsupported link</option>
+        <option value="price_not_found">Price not found</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Details (optional)</label>
+      <textarea id="reportMsg" placeholder="e.g. Shows $5 but actual price is $34.95" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:Outfit,sans-serif;font-size:13px;padding:8px 10px;outline:none;resize:none;height:70px"></textarea>
+    </div>
+    <div id="reportStatus"></div>
+    <button class="btn btn-amber" id="submitReport">Send report</button>
+  `;
+  document.getElementById('backBtn').addEventListener('click', () => renderTrack());
+  document.getElementById('submitReport').addEventListener('click', async () => {
+    const reason  = document.getElementById('reasonSel').value;
+    const message = document.getElementById('reportMsg').value.trim();
+    const btn = document.getElementById('submitReport');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      await apiCall('POST', '/api/reports', { url: reportUrl, reason, message }, token);
+      document.getElementById('reportStatus').innerHTML = '<div class="msg msg-success">✓ Report sent! We'll look into it.</div>';
+      btn.style.display = 'none';
+      setTimeout(() => renderTrack(), 2000);
+    } catch(e) {
+      document.getElementById('reportStatus').innerHTML = `<div class="msg msg-error">${e.message}</div>`;
+      btn.disabled = false; btn.textContent = 'Send report';
+    }
+  });
+}
+
 function renderLogin(errorMsg = '') {
   logoutBtn.style.display = 'none';
   app.innerHTML = `
@@ -83,8 +127,9 @@ async function renderTrack(successMsg = '') {
     <div id="actionArea">
       <button class="btn btn-amber" id="fetchBtn">Fetch price</button>
     </div>
-    <div class="view-dashboard">
+    <div class="view-dashboard" style="display:flex;justify-content:space-between">
       <a href="#" id="dashLink">Open full dashboard →</a>
+      <a href="#" id="reportLink" style="color:var(--muted)">Report issue</a>
     </div>
   `;
 
@@ -182,6 +227,11 @@ async function renderTrack(successMsg = '') {
     e.preventDefault();
     const t = await getToken();
     chrome.tabs.create({ url: 'https://wishlistwatcher.com/dashboard.html?token=' + encodeURIComponent(t) });
+  });
+  document.getElementById('reportLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const inputUrl = document.getElementById('urlInput')?.value?.trim() || url;
+    renderReport(inputUrl);
   });
   if (isHttp && url) doFetch();
 }
