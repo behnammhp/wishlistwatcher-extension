@@ -152,6 +152,10 @@ async function renderTrack(successMsg = '') {
         const pct    = parseInt(slider.value);
         const target = parseFloat((basePrice * (1 - pct / 100)).toFixed(2));
         const addBtn = document.getElementById('addBtn');
+        if (target >= price) {
+          priceArea.innerHTML += `<div class="msg msg-error" style="margin-top:8px">⚠️ This item is already cheaper than your target price!</div>`;
+          return;
+        }
         addBtn.disabled = true; addBtn.textContent = '…';
         try {
           await apiCall('POST', '/api/items', {
