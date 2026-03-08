@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "WishlistWatcher",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Track product prices and get alerted when they drop. v1.1.0",
   "icons": {
     "16": "icons/icon16.png",
