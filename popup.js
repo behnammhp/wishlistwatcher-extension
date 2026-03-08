@@ -100,9 +100,9 @@ async function renderTrack(successMsg = '') {
     try {
       const data = await apiCall('POST', '/api/items/preview', { url: cleanUrl }, token);
       if (!data.price) throw new Error('Could not fetch price');
-      const price    = data.price;
+      const price     = data.price;
       const origPrice = data.original_price;
-      const suggested = (price * 0.9).toFixed(2);
+      const basePrice = origPrice && origPrice > price ? origPrice : price;
 
       let priceHtml = '';
       if (origPrice && origPrice > price) {
@@ -120,18 +120,37 @@ async function renderTrack(successMsg = '') {
           </div>
         </div>
       `;
+
+      // Slider UI
       actionArea.innerHTML = `
-        <div class="target-row">
-          <div class="field">
-            <label>Alert me when price ≤</label>
-            <input type="number" id="targetInput" step="0.01" min="0" value="${suggested}" placeholder="0.00">
+        <div class="field" style="margin-bottom:6px">
+          <label>Alert me when price drops by</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+            <input type="range" id="pctSlider" min="1" max="80" value="10" style="flex:1;accent-color:var(--amber)">
+            <span id="pctLabel" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:600;color:var(--amber);min-width:36px;text-align:right">10%</span>
           </div>
-          <button class="btn btn-amber" id="addBtn">Track</button>
+          <div id="targetDisplay" style="margin-top:6px;font-size:12px;color:var(--muted)">
+            Alert when price ≤ <strong style="color:var(--text)">$${(basePrice*0.9).toFixed(2)}</strong>
+            <span style="color:var(--green)"> (save $${(basePrice*0.1).toFixed(2)})</span>
+          </div>
         </div>
+        <button class="btn btn-amber" id="addBtn">Track this item</button>
       `;
+
+      const slider   = document.getElementById('pctSlider');
+      const pctLabel = document.getElementById('pctLabel');
+      const targetDi = document.getElementById('targetDisplay');
+
+      slider.addEventListener('input', () => {
+        const pct    = parseInt(slider.value);
+        const target = basePrice * (1 - pct / 100);
+        pctLabel.textContent = pct + '%';
+        targetDi.innerHTML = `Alert when price ≤ <strong style="color:var(--text)">$${target.toFixed(2)}</strong> <span style="color:var(--green)">(save $${(basePrice - target).toFixed(2)})</span>`;
+      });
+
       document.getElementById('addBtn').addEventListener('click', async () => {
-        const target = parseFloat(document.getElementById('targetInput').value);
-        if (!target) return;
+        const pct    = parseInt(slider.value);
+        const target = parseFloat((basePrice * (1 - pct / 100)).toFixed(2));
         const addBtn = document.getElementById('addBtn');
         addBtn.disabled = true; addBtn.textContent = '…';
         try {
@@ -142,11 +161,11 @@ async function renderTrack(successMsg = '') {
           }, token);
           renderTrack('✓ Tracking! You\'ll be alerted when the price drops.');
         } catch(e) {
-          priceArea.innerHTML = `<div class="msg msg-error">${e.message}</div>`;
-          actionArea.innerHTML = `<button class="btn btn-amber" id="fetchBtn">Try again</button>`;
-          document.getElementById('fetchBtn').addEventListener('click', doFetch);
+          priceArea.innerHTML += `<div class="msg msg-error" style="margin-top:8px">${e.message}</div>`;
+          addBtn.disabled = false; addBtn.textContent = 'Track this item';
         }
       });
+
     } catch(e) {
       priceArea.innerHTML = `<div class="msg msg-error">${e.message}</div>`;
       actionArea.innerHTML = `<button class="btn btn-amber" id="fetchBtn">Try again</button>`;
@@ -155,13 +174,12 @@ async function renderTrack(successMsg = '') {
   }
 
   document.getElementById('fetchBtn').addEventListener('click', doFetch);
-  if (isHttp && url) doFetch();
-  // Dashboard link — pass token via URL so user is auto-logged in
   document.getElementById('dashLink').addEventListener('click', async (e) => {
     e.preventDefault();
     const t = await getToken();
     chrome.tabs.create({ url: 'https://wishlistwatcher.com/dashboard.html?token=' + encodeURIComponent(t) });
   });
+  if (isHttp && url) doFetch();
 }
 
 logoutBtn.addEventListener('click', async () => { await clearToken(); renderLogin(); });
