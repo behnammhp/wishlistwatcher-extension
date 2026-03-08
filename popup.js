@@ -104,9 +104,9 @@ async function renderTrack(successMsg) {
     '<input type="url" id="urlInput" placeholder="https://..." value="' + safeUrl + '"></div>' +
     '<div id="priceArea"></div>' +
     '<div id="actionArea"><button class="btn btn-amber" id="fetchBtn">Fetch price</button></div>' +
-    '<div class="view-dashboard" style="display:flex;justify-content:space-between">' +
-    '<a href="#" id="dashLink">Open full dashboard</a>' +
-    '<a href="#" id="reportLink" style="color:var(--muted)">Report issue</a>' +
+    '<div class="footer">' +
+    '<a href="#" id="dashLink">Open dashboard →</a>' +
+    '<button class="report-btn" id="reportLink">🚩 Report issue</button>' +
     '</div>';
 
   var priceArea = document.getElementById('priceArea');
