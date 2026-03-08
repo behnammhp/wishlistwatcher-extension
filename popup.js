@@ -239,9 +239,13 @@ async function renderTrack(successMsg = '') {
 logoutBtn.addEventListener('click', async () => { await clearToken(); renderLogin(); });
 
 (async () => {
-  const token = await getToken();
-  if (token) {
-    try { await apiCall('GET', '/api/auth/me', null, token); renderTrack(); }
-    catch { await clearToken(); renderLogin(); }
-  } else { renderLogin(); }
+  try {
+    const token = await getToken();
+    if (token) {
+      try { await apiCall('GET', '/api/auth/me', null, token); renderTrack(); }
+      catch { await clearToken(); renderLogin(); }
+    } else { renderLogin(); }
+  } catch(e) {
+    app.innerHTML = '<div class="msg msg-error" style="margin:16px">Failed to load: ' + e.message + '</div>';
+  }
 })();
