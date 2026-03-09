@@ -1,3 +1,15 @@
+function affiliateUrl(url) {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('amazon.')) {
+      u.searchParams.set('tag', 'wishlistwat0b-20');
+      return u.toString();
+    }
+  } catch(e) {}
+  return url;
+}
+
 const API = 'https://wishlistwatcher.com';
 const app = document.getElementById('app');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -172,7 +184,7 @@ async function renderTrack(successMsg) {
         var btn = document.getElementById('addBtn');
         btn.disabled = true; btn.textContent = '...';
         try {
-          await apiCall('POST', '/api/items', { url: cleanUrl, target_price: target, original_price: origPrice || null }, token);
+          await apiCall('POST', '/api/items', { url: cleanUrl, target_price: target, original_price: origPrice || null, last_price: data.price || null, currency: data.currency || null }, token);
           renderTrack('Tracking! You will be alerted when the price drops.');
         } catch(e) {
           priceArea.innerHTML += '<div class="msg msg-error" style="margin-top:8px">' + e.message + '</div>';
