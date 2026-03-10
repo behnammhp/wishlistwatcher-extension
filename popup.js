@@ -137,12 +137,13 @@ async function renderTrack(successMsg) {
       var origPrice = data.original_price;
       var basePrice = (origPrice && origPrice > price) ? origPrice : price;
 
+      var curr = data.currency === 'CAD' ? 'CA$' : data.currency === 'GBP' ? 'GBP ' : data.currency === 'EUR' ? 'EUR ' : '$';
       var priceHtml;
       if (origPrice && origPrice > price) {
         var pct = Math.round((1 - price / origPrice) * 100);
-        priceHtml = '<span class="price-original">$' + origPrice.toFixed(2) + '</span><span class="price-value">$' + price.toFixed(2) + '</span><span class="price-sale-badge">' + pct + '% off</span>';
+        priceHtml = '<span class="price-original">' + curr + origPrice.toFixed(2) + '</span><span class="price-value">' + curr + price.toFixed(2) + '</span><span class="price-sale-badge">' + pct + '% off</span>';
       } else {
-        priceHtml = '<span class="price-value">$' + price.toFixed(2) + '</span>';
+        priceHtml = '<span class="price-value">' + curr + price.toFixed(2) + '</span>';
       }
 
       priceArea.innerHTML =
@@ -154,12 +155,12 @@ async function renderTrack(successMsg) {
       actionArea.innerHTML =
         '<div class="field" style="margin-bottom:6px"><label>Alert me when price drops by</label>' +
         '<div style="display:flex;align-items:center;gap:10px;margin-top:6px">' +
-        '<input type="range" id="pctSlider" min="1" max="80" value="10" style="flex:1;accent-color:var(--amber)">' +
-        '<span id="pctLabel" style="font-family:DM Mono,monospace;font-size:15px;font-weight:600;color:var(--amber);min-width:36px;text-align:right">10%</span>' +
+        '<input type="range" id="pctSlider" min="5" max="80" value="20" step="5" style="flex:1;accent-color:var(--amber)">' +
+        '<span id="pctLabel" style="font-family:DM Mono,monospace;font-size:15px;font-weight:600;color:var(--amber);min-width:36px;text-align:right">20%</span>' +
         '</div>' +
         '<div id="targetDisplay" style="margin-top:6px;font-size:12px;color:var(--muted)">' +
-        'Alert when price &le; <strong style="color:var(--text)">$' + (basePrice * 0.9).toFixed(2) + '</strong>' +
-        '<span style="color:var(--green)"> (save $' + (basePrice * 0.1).toFixed(2) + ')</span></div></div>' +
+        'Alert when price &le; <strong style="color:var(--text)">$' + (basePrice * 0.8).toFixed(2) + '</strong>' +
+        '<span style="color:var(--green)"> (save $' + (basePrice * 0.2).toFixed(2) + ')</span></div></div>' +
         '<div id="warnMsg"></div>' +
         '<button class="btn btn-amber" id="addBtn">Track this item</button>';
 
@@ -186,6 +187,7 @@ async function renderTrack(successMsg) {
         try {
           await apiCall('POST', '/api/items', { url: cleanUrl, target_price: target, original_price: origPrice || null, last_price: data.price || null, currency: data.currency || null }, token);
           renderTrack('Tracking! You will be alerted when the price drops.');
+          setTimeout(() => window.close(), 1500);
         } catch(e) {
           priceArea.innerHTML += '<div class="msg msg-error" style="margin-top:8px">' + e.message + '</div>';
           btn.disabled = false; btn.textContent = 'Track this item';
