@@ -70,6 +70,7 @@ async function renderReport(reportUrl) {
     '<div class="field"><label>Issue type</label>' +
     '<select id="reasonSel" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:Outfit,sans-serif;font-size:13px;padding:8px 10px;outline:none">' +
     '<option value="wrong_price">Wrong price</option>' +
+    '<option value="wrong_currency">Wrong currency</option>' +
     '<option value="broken_link">Broken / unsupported link</option>' +
     '<option value="price_not_found">Price not found</option>' +
     '<option value="other">Other</option>' +
