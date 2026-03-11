@@ -2,10 +2,11 @@ function affiliateUrl(url) {
   if (!url) return url;
   try {
     const u = new URL(url);
-    if (u.hostname.includes('amazon.')) {
+    if (u.hostname.includes('amazon.ca')) {
       u.searchParams.set('tag', 'wishlistwat0b-20');
       return u.toString();
     }
+    // TODO: add amazon.com, amazon.co.uk, amazon.de tags when registered
   } catch(e) {}
   return url;
 }
