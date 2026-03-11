@@ -13,6 +13,7 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   const url = info.linkUrl || info.pageUrl;
+  if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) return;
   chrome.storage.local.set({ pendingUrl: url }, () => {
     chrome.action.openPopup();
   });
