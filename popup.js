@@ -140,7 +140,7 @@ async function renderTrack(successMsg) {
       var basePrice = (origPrice && origPrice > price) ? origPrice : price;
       // If already on sale, default slider to current discount + 5% so target is below sale price
       var currentDiscountPct = (origPrice && origPrice > price) ? Math.round((1 - price / origPrice) * 100) : 0;
-      var defaultSliderPct = Math.min(80, Math.ceil((currentDiscountPct + 5) / 5) * 5) || 20;
+      var defaultSliderPct = currentDiscountPct > 0 ? Math.min(80, Math.ceil((currentDiscountPct + 5) / 5) * 5) : 20;
 
       var curr = data.currency === 'CAD' ? 'CA$' : data.currency === 'GBP' ? 'GBP ' : data.currency === 'EUR' ? 'EUR ' : '$';
       var priceHtml;
