@@ -187,7 +187,7 @@ async function renderTrack(successMsg) {
         var btn = document.getElementById('addBtn');
         btn.disabled = true; btn.textContent = '...';
         try {
-          await apiCall('POST', '/api/items', { url: cleanUrl, target_price: target, original_price: origPrice || null, last_price: data.price || null, currency: data.currency || null }, token);
+          await apiCall('POST', '/api/items', { url: cleanUrl, target_price: target, original_price: origPrice || null, last_price: data.price || null, currency: data.currency || null, title: data.title || null }, token);
           renderTrack('Tracking! You will be alerted when the price drops.');
           setTimeout(() => window.close(), 1500);
         } catch(e) {
