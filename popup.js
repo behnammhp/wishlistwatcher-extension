@@ -138,6 +138,9 @@ async function renderTrack(successMsg) {
       var price = data.price;
       var origPrice = data.original_price;
       var basePrice = (origPrice && origPrice > price) ? origPrice : price;
+      // If already on sale, default slider to current discount + 5% so target is below sale price
+      var currentDiscountPct = (origPrice && origPrice > price) ? Math.round((1 - price / origPrice) * 100) : 0;
+      var defaultSliderPct = Math.min(80, Math.ceil((currentDiscountPct + 5) / 5) * 5) || 20;
 
       var curr = data.currency === 'CAD' ? 'CA$' : data.currency === 'GBP' ? 'GBP ' : data.currency === 'EUR' ? 'EUR ' : '$';
       var priceHtml;
@@ -157,12 +160,12 @@ async function renderTrack(successMsg) {
       actionArea.innerHTML =
         '<div class="field" style="margin-bottom:6px"><label>Alert me when price drops by</label>' +
         '<div style="display:flex;align-items:center;gap:10px;margin-top:6px">' +
-        '<input type="range" id="pctSlider" min="5" max="80" value="20" step="5" style="flex:1;accent-color:var(--amber)">' +
-        '<span id="pctLabel" style="font-family:DM Mono,monospace;font-size:15px;font-weight:600;color:var(--amber);min-width:36px;text-align:right">20%</span>' +
+        '<input type="range" id="pctSlider" min="5" max="80" value="' + defaultSliderPct + '" step="5" style="flex:1;accent-color:var(--amber)">' +
+        '<span id="pctLabel" style="font-family:DM Mono,monospace;font-size:15px;font-weight:600;color:var(--amber);min-width:36px;text-align:right">' + defaultSliderPct + '%</span>' +
         '</div>' +
         '<div id="targetDisplay" style="margin-top:6px;font-size:12px;color:var(--muted)">' +
-        'Alert when price &le; <strong style="color:var(--text)">$' + (basePrice * 0.8).toFixed(2) + '</strong>' +
-        '<span style="color:var(--green)"> (save $' + (basePrice * 0.2).toFixed(2) + ')</span></div></div>' +
+        'Alert when price &le; <strong style="color:var(--text)">$' + (basePrice * (1 - defaultSliderPct/100)).toFixed(2) + '</strong>' +
+        '<span style="color:var(--green)"> (save $' + (basePrice * defaultSliderPct/100).toFixed(2) + ')</span></div></div>' +
         '<div id="warnMsg"></div>' +
         '<button class="btn btn-amber" id="addBtn">Track this item</button>';
 
