@@ -13,5 +13,7 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   const url = info.linkUrl || info.pageUrl;
-  chrome.storage.local.set({ pendingUrl: url });
+  chrome.storage.local.set({ pendingUrl: url }, () => {
+    chrome.action.openPopup();
+  });
 });
